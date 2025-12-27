@@ -81,22 +81,23 @@ public class SecurityConfig {
 
     /**
      * CORS configuration to allow frontend to call API and send Authorization
-     * header. Adjust allowedOrigins / allowedMethods as needed.
+     * header. Uses allowedOriginPatterns for Codespaces/dynamic URLs.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration conf = new CorsConfiguration();
-        // Allow both production frontend and localhost for development/testing
-        conf.setAllowedOrigins(List.of(
+        // Allow pattern matching for Codespaces URLs (*.app.github.dev) and localhost
+        conf.setAllowedOriginPatterns(List.of(
                 frontendOrigin,
-                "http://localhost:3000",
-                "http://localhost:8080",
-                "http://localhost:5173"
+                "http://localhost:*",
+                "https://localhost:*",
+                "https://*.app.github.dev",
+                "https://*.githubpreview.dev"
         ));
-        conf.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        conf.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With"));
+        conf.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        conf.setAllowedHeaders(List.of("*")); // Allow all headers for Swagger compatibility
         conf.setExposedHeaders(List.of("Authorization", "Content-Type")); // headers that frontend can read
-        conf.setAllowCredentials(true); // set to true if frontend needs cookies (not used for JWT)
+        conf.setAllowCredentials(true); // required for allowedOriginPatterns
         conf.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", conf);
